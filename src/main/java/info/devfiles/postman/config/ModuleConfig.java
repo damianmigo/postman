@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -26,6 +28,10 @@ import info.devfiles.postman.templating.TemplateLoaderMultiton;
 public class ModuleConfig {
 
 	private String awsRegion;
+	
+	private String redisHostname;
+	
+	private int redisPort;
 	
 	@Bean
 	public JavaMailSender mailSender(AmazonSimpleEmailService amazonSimpleEmailService) {
@@ -77,4 +83,37 @@ public class ModuleConfig {
 		this.awsRegion = awsRegion;
 	}
 
+	public String getRedisHostname() {
+		return redisHostname;
+	}
+
+	@Value("${postman.redisHostname}")
+	public void setRedisHostname(String redisHostname) {
+		this.redisHostname = redisHostname;
+	}
+
+	public int getRedisPort() {
+		return redisPort;
+	}
+
+	@Value("${postman.redisPort}")
+	public void setRedisPort(int redisPort) {
+		this.redisPort = redisPort;
+	}
+
+	@Bean
+	public JedisConnectionFactory jedisConnectionFactory() {
+		JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory();
+		jedisConnectionFactory.setHostName(getRedisHostname());
+		jedisConnectionFactory.setPort(getRedisPort());
+		return jedisConnectionFactory;
+	}
+	
+	@Bean
+	public RedisTemplate<String, String> redisTemplate() {
+		RedisTemplate<String, String> redisTemplate = new RedisTemplate<String, String>();
+		redisTemplate.setConnectionFactory(jedisConnectionFactory());
+		return redisTemplate;
+	}
+	
 }

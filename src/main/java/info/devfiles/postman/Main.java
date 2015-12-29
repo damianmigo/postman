@@ -1,46 +1,58 @@
 package info.devfiles.postman;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.daemon.Daemon;
+import org.apache.commons.daemon.DaemonContext;
+import org.apache.commons.daemon.DaemonInitException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.mail.javamail.MimeMessagePreparator;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.support.collections.DefaultRedisList;
 
 import info.devfiles.postman.config.ModuleConfig;
+import info.devfiles.postman.engine.EmailMessageConsumer;
 
-public class Main {
+public class Main implements Daemon {
+	
+	private AnnotationConfigApplicationContext applicationContext;
+	
+	private EmailMessageConsumer emailMessageConsumer;
 
 	public static void main(String[] args) {
+	
+	}
+
+	@Override
+	public void destroy() {
+		applicationContext.close();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void init(DaemonContext daemonContext) throws DaemonInitException, Exception {
 		
-		AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-		ctx.register(ModuleConfig.class);
-		ctx.refresh();
+		String[] args = daemonContext.getArguments();
+		String queueName = args[0];
+		int nThreads = Integer.parseInt(args[1]);
 		
-		/*SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-		simpleMailMessage.setFrom("admin@devfiles.info");
-		simpleMailMessage.setTo("damian.miranda1@gmail.com");
-		simpleMailMessage.setSubject("test subject");
-		simpleMailMessage.setText("test content");*/
+		applicationContext = new AnnotationConfigApplicationContext();
+		applicationContext.register(ModuleConfig.class);
+		applicationContext.refresh();
+
+		RedisTemplate<String, String> redisTemplate = applicationContext.getBean(RedisTemplate.class);
+		DefaultRedisList<String> emailMessageQueue = new DefaultRedisList<String>(queueName, redisTemplate);
 		
-		
-		JavaMailSender mailSender = ctx.getBean(JavaMailSender.class);
-		
-		
-		mailSender.send(new MimeMessagePreparator() {
-			   public void prepare(MimeMessage mimeMessage) throws MessagingException {
-				     MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-				     message.setFrom("admin@devfiles.info");
-				     message.setTo("damian.miranda1@gmail.com");
-				     message.setSubject("my subject");
-				     message.setText("<h1>this is</h1> <strong>HTML</strong>", true);
-				   }
-				 });
-		
-		ctx.close();
-		
-		
+		emailMessageConsumer = applicationContext.getBean(EmailMessageConsumer.class, emailMessageQueue, nThreads);
+	}
+
+	@Override
+	public void start() throws Exception {
+		emailMessageConsumer.start();
+	}
+
+	@Override
+	public void stop() throws Exception {
+		emailMessageConsumer.stop(5, TimeUnit.MINUTES);
 	}
 	
 }

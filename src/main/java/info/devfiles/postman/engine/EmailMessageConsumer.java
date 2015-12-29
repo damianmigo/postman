@@ -2,9 +2,14 @@ package info.devfiles.postman.engine;
 
 import java.util.concurrent.BlockingQueue;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
 import info.devfiles.postman.EmailMessage;
 import info.devfiles.postman.config.EmailSender;
 
+@Service
+@Scope("prototype")
 public class EmailMessageConsumer extends MultithreadQueueConsumer<EmailMessage> {
 	
 	private EmailSender emailSender;
