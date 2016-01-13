@@ -1,4 +1,4 @@
-package info.devfiles.postman.config;
+package info.devfiles.postman;
 
 public class EmailSenderMultiton {
 

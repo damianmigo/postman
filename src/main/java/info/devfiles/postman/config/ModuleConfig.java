@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.aws.context.config.annotation.EnableContextCredentials;
 import org.springframework.cloud.aws.mail.simplemail.SimpleEmailServiceJavaMailSender;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -17,6 +19,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 
+import info.devfiles.postman.EmailMessage;
 import info.devfiles.postman.templating.HttpTemplateLoader;
 import info.devfiles.postman.templating.StringTemplateWrapper;
 import info.devfiles.postman.templating.TemplateEngineWrapperMultiton;
@@ -25,6 +28,7 @@ import info.devfiles.postman.templating.TemplateLoaderMultiton;
 @Configuration
 @PropertySource("classpath:defaults.properties")
 @EnableContextCredentials(accessKey="${postman.awsAccessKey}", secretKey="${postman.awsSecretKey}")
+@ComponentScan("info.devfiles.postman")
 public class ModuleConfig {
 
 	private String awsRegion;
@@ -61,14 +65,14 @@ public class ModuleConfig {
 	public TemplateLoaderMultiton templateLoaderMultiton() {
 		TemplateLoaderMultiton templateLoaderMultiton = new TemplateLoaderMultiton();
 		templateLoaderMultiton.registerInstace("HTTP", httpTemplateLoader());
-		return templateLoaderMultiton();
+		return templateLoaderMultiton;
 	}
 	
 	@Bean
 	public HttpTemplateLoader httpTemplateLoader() {
 		return new HttpTemplateLoader();
 	}
-	
+		
 	@Bean
 	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
 		return new PropertySourcesPlaceholderConfigurer();
@@ -110,10 +114,22 @@ public class ModuleConfig {
 	}
 	
 	@Bean
-	public RedisTemplate<String, String> redisTemplate() {
-		RedisTemplate<String, String> redisTemplate = new RedisTemplate<String, String>();
+	public RedisTemplate<String, EmailMessage> redisTemplate() {
+		RedisTemplate<String, EmailMessage> redisTemplate = new RedisTemplate<String, EmailMessage>();
 		redisTemplate.setConnectionFactory(jedisConnectionFactory());
+		redisTemplate.setKeySerializer(keyRedisJsonSerializer());
+		redisTemplate.setValueSerializer(valueRedisJsonSerializer());
 		return redisTemplate;
+	}
+	
+	@Bean
+	public JacksonJsonRedisSerializer<String> keyRedisJsonSerializer() {
+		return new JacksonJsonRedisSerializer<String>(String.class);
+	}
+	
+	@Bean
+	public JacksonJsonRedisSerializer<EmailMessage> valueRedisJsonSerializer() {
+		return new JacksonJsonRedisSerializer<EmailMessage>(EmailMessage.class);
 	}
 	
 }

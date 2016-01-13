@@ -1,13 +1,9 @@
 package info.devfiles.postman.templating;
 
-
 import java.security.InvalidParameterException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.stereotype.Service;
-
-@Service
 public class TemplateLoaderMultiton {
 
 	private Map<String, TemplateLoader> multiton = new ConcurrentHashMap<String, TemplateLoader>();

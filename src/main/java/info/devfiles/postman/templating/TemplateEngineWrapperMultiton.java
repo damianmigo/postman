@@ -4,9 +4,6 @@ import java.security.InvalidParameterException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.stereotype.Service;
-
-@Service
 public class TemplateEngineWrapperMultiton {
 
 	private Map<String, TemplateEngineWrapper> multiton = new ConcurrentHashMap<String, TemplateEngineWrapper>();

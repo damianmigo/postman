@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import info.devfiles.postman.EmailMessage;
-import info.devfiles.postman.config.EmailSender;
+import info.devfiles.postman.EmailSender;
 
-@Service
+@Service("EmailMessageConsumer")
 @Scope("prototype")
 public class EmailMessageConsumer extends MultithreadQueueConsumer<EmailMessage> {
 	

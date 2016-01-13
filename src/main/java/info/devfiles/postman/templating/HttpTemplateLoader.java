@@ -8,12 +8,10 @@ import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-@Service
 public class HttpTemplateLoader implements TemplateLoader {
 
 	private String cacheSpec;

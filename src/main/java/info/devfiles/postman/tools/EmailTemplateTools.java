@@ -3,6 +3,7 @@ package info.devfiles.postman.tools;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import info.devfiles.postman.EmailTemplateMessage;
 import info.devfiles.postman.TemplateParameters;
@@ -11,6 +12,7 @@ import info.devfiles.postman.templating.TemplateEngineWrapperMultiton;
 import info.devfiles.postman.templating.TemplateLoader;
 import info.devfiles.postman.templating.TemplateLoaderMultiton;
 
+@Service
 public class EmailTemplateTools {
 	
 	private TemplateEngineWrapperMultiton templateEngineWrapperMultiton;
